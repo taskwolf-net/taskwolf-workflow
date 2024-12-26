@@ -2,6 +2,7 @@ package com.dulno.workflow;
 
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
+import com.dulno.core.module.ModuleLoader;
 import com.dulno.workflow.operation.OperationDatabaseTable;
 import com.dulno.workflow.throttle.WorkflowThrottleDatabaseTable;
 import com.dulno.workflow.timeline.TimelineDatabaseTable;
@@ -24,6 +25,12 @@ public class WorkflowInjectionModule extends AbstractModule {
     install(ConditionInjectionModule.create());
     install(LoopInjectionModule.create());
     install(WorkflowInjectionModule.create());
+  }
+
+  @Provides
+  @Singleton
+  WorkflowModule provideWorkflowModule(ModuleLoader moduleLoader) {
+    return (WorkflowModule) moduleLoader.findModule("workflow").get();
   }
 
   @Provides

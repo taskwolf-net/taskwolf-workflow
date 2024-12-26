@@ -1,20 +1,21 @@
-package com.dulno.workflow;
+package com.dulno.workflow.sub;
 
 import com.dulno.core.account.AccountLink;
-import com.dulno.core.action.ActionRepository;
 import com.dulno.core.database.DatabaseConnection;
 import com.dulno.core.database.DatabaseKeyspace;
 import com.dulno.core.log.Log;
-import com.dulno.core.module.Module;
 import com.dulno.core.module.ModuleDescription;
 import com.dulno.core.module.ModuleInformation;
 import com.dulno.core.module.ModuleLoadPriority;
-import com.dulno.core.trigger.TriggerRepository;
+import com.dulno.workflow.WorkflowInjectionModule;
+import com.dulno.workflow.action.ActionRepository;
+import com.dulno.workflow.integration.Integration;
+import com.dulno.workflow.trigger.TriggerRepository;
 import com.google.inject.Injector;
 
 @ModuleDescription(name = "sub-workflow", version = "1.0.0-SNAPSHOT",
   priority = ModuleLoadPriority.NEUTRAL)
-public final class SubWorkflowModule extends Module {
+public final class SubWorkflowModule extends Integration {
   private Log log;
   private AccountLink accountLink;
 

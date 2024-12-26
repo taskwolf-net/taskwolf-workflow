@@ -1,4 +1,4 @@
-package com.dulno.workflow;
+package com.dulno.workflow.sub;
 
 import com.dulno.core.account.AccountLink;
 import com.dulno.core.account.AccountLinkEntry;

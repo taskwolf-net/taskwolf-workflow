@@ -1,0 +1,6 @@
+image: gradle:8.11-jdk21
+
+build:
+  stage: build
+  script:
+    - gradle assemble

@@ -7,7 +7,6 @@ import com.dulno.core.log.Log;
 import com.dulno.core.module.ModuleDescription;
 import com.dulno.core.module.ModuleInformation;
 import com.dulno.core.module.ModuleLoadPriority;
-import com.dulno.workflow.WorkflowInjectionModule;
 import com.dulno.workflow.action.ActionRepository;
 import com.dulno.workflow.integration.Integration;
 import com.dulno.workflow.trigger.TriggerRepository;
@@ -20,7 +19,7 @@ public final class SubWorkflowModule extends Integration {
   private AccountLink accountLink;
 
   public SubWorkflowModule(Injector injector) {
-    super(injector.createChildInjector(WorkflowInjectionModule.create()));
+    super(injector);
   }
 
   @Override

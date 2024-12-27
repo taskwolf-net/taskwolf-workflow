@@ -24,7 +24,6 @@ public class WorkflowInjectionModule extends AbstractModule {
     install(ActionInjectionModule.create());
     install(ConditionInjectionModule.create());
     install(LoopInjectionModule.create());
-    install(WorkflowInjectionModule.create());
   }
 
   @Provides

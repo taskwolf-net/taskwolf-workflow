@@ -9,10 +9,11 @@ public enum InputComponentDataType {
   TEXT_AREA,
   NUMBER,
   BOOLEAN,
-  UUID,
-  DATE,
-  SELECT,
-  DYNAMIC,
   FILE,
-  TIME;
+  DATE,
+  TIME,
+  LIST,
+  MAP,
+  SELECT,
+  DYNAMIC;
 }

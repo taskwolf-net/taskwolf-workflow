@@ -77,7 +77,8 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
         inputs.put(entry.getKey().replace("sub_workflow_", ""), entry.getValue());
       }
     }
-    return DatabaseRow.of(content.get("workflow"), inputs.toString());
+    return DatabaseRow.of(UUID.fromString((String) content.get("workflow")),
+      inputs.toString());
   }
 
   @Override

@@ -37,7 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @ModuleDescription(name = "workflow", version = "1.0.0-SNAPSHOT",
-  priority = ModuleLoadPriority.HIGH)
+  priority = ModuleLoadPriority.FIRST)
 public final class WorkflowModule extends Module {
   private Log log;
   private ModuleLoader moduleLoader;

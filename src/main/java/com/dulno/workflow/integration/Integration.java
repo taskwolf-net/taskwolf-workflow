@@ -1,7 +1,6 @@
 package com.dulno.workflow.integration;
 
 import com.dulno.core.module.Module;
-import com.dulno.workflow.WorkflowInjectionModule;
 import com.dulno.workflow.action.Action;
 import com.dulno.workflow.action.ActionRepository;
 import com.dulno.workflow.trigger.Trigger;
@@ -10,7 +9,7 @@ import com.google.inject.Injector;
 
 public abstract class Integration extends Module {
   protected Integration(Injector injector) {
-    super(injector.createChildInjector(WorkflowInjectionModule.create()));
+    super(injector);
   }
 
   @Override

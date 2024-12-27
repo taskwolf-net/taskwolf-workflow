@@ -13,12 +13,8 @@ public abstract class Integration extends Module {
     super(injector.createChildInjector(WorkflowInjectionModule.create()));
   }
 
-  /**
-   * Is called up when the module is to be loaded.
-   * Used to initialize the module.
-   * @throws Exception
-   */
-  public void enable() throws Exception {
+  @Override
+  public void postEnable() throws Exception {
     triggerRepository().allTriggers().forEach(Trigger::initialize);
     actionRepository().allActions().forEach(Action::initialize);
   }

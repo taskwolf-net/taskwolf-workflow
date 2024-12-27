@@ -16,8 +16,9 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   ) {
     var columns = Lists.<DatabaseColumn>newArrayList();
     columns.add(DatabaseColumn.create("id", DatabaseDataType.UUID,
-      DatabaseColumn.Type.PRIMARY_KEY));
-    columns.add(DatabaseColumn.create("owner", DatabaseDataType.UUID));
+      DatabaseColumn.Type.PARTITION_KEY));
+    columns.add(DatabaseColumn.create("owner", DatabaseDataType.UUID,
+      DatabaseColumn.Type.CLUSTERING_KEY));
     columns.add(DatabaseColumn.create("workflow", DatabaseDataType.UUID));
     columns.add(DatabaseColumn.create("module", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("type", DatabaseDataType.TEXT));
@@ -29,6 +30,7 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   }
 
   private DatabaseTable workflowView;
+  private DatabaseTable ownerTypeView;
 
   private TriggerDatabaseTable(
     DatabaseConnection connection, DatabaseKeyspace keyspace, String name,
@@ -40,6 +42,18 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   private void initializeViews() {
     workflowView = createMaterializedViewIfNotExists("workflow_view", "workflow",
       DatabaseColumn.Type.PARTITION_KEY);
+    initializeOwnerTypeView();
+  }
+
+  private void initializeOwnerTypeView() {
+    var columns = Lists.<DatabaseColumn>newArrayList();
+    columns.add(DatabaseColumn.create("owner", DatabaseDataType.UUID,
+      DatabaseColumn.Type.PARTITION_KEY));
+    columns.add(DatabaseColumn.create("type", DatabaseDataType.TEXT,
+      DatabaseColumn.Type.PARTITION_KEY));
+    columns.add(DatabaseColumn.create("id", DatabaseDataType.UUID,
+      DatabaseColumn.Type.CLUSTERING_KEY));
+    ownerTypeView = createMaterializedViewIfNotExists("owner_type_view", columns);
   }
 
   public CompletableFuture<Void> insertTrigger(TriggerEntry entry) {
@@ -85,6 +99,10 @@ public final class TriggerDatabaseTable extends DatabaseTable {
     return exists(triggerId);
   }
 
+  public CompletableFuture<Boolean> triggerExistsByWorkflow(UUID workflowId) {
+    return workflowView.exists(workflowId);
+  }
+
   public CompletableFuture<TriggerEntry> findTrigger(UUID triggerId) {
     return selectRow(triggerId).thenApply(row -> TriggerEntry.of(row, this));
   }
@@ -92,5 +110,13 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   public CompletableFuture<TriggerEntry> findTriggerByWorkflow(UUID workflowId) {
     return workflowView.selectRow(DatabaseCondition.of("workflow", workflowId))
       .thenApply(row -> TriggerEntry.of(row, workflowView));
+  }
+
+  public CompletableFuture<List<TriggerEntry>> findTriggerByOwnerAndType(
+    UUID ownerId, String type
+  ) {
+    var condition = DatabaseCondition.of("owner", ownerId, "type", type);
+    return ownerTypeView.selectRows(condition).thenApply(rows ->
+      rows.stream().map(row -> TriggerEntry.of(row, ownerTypeView)).toList());
   }
 }

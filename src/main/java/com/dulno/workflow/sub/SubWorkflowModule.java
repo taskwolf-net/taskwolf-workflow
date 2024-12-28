@@ -14,6 +14,7 @@ import com.dulno.workflow.component.input.InputComponentSelect;
 import com.dulno.workflow.integration.Integration;
 import com.dulno.workflow.structure.WorkflowDatabaseTable;
 import com.dulno.workflow.sub.action.call.SubWorkflowCallAction;
+import com.dulno.workflow.sub.action.close.SubWorkflowCloseAction;
 import com.dulno.workflow.sub.select.SubWorkflowSelect;
 import com.dulno.workflow.sub.trigger.SubWorkflowTrigger;
 import com.dulno.workflow.trigger.TriggerDatabaseTable;
@@ -78,9 +79,13 @@ public final class SubWorkflowModule extends Integration {
   @Override
   public ActionRepository actionRepository() {
     var repository = ActionRepository.create();
+    var closeAction = SubWorkflowCloseAction.create(databaseConnection,
+      databaseKeyspace);
     repository.registerAction(SubWorkflowCallAction.create(triggerDatabaseTable,
-      subWorkflowTrigger, injector().getInstance(WorkflowModule.class),
-      subWorkflowSelect, databaseConnection, databaseKeyspace));
+      actionDatabaseTable, subWorkflowTrigger, closeAction,
+      injector().getInstance(WorkflowModule.class), subWorkflowSelect,
+      databaseConnection, databaseKeyspace));
+    repository.registerAction(closeAction);
     return repository;
   }
 }

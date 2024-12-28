@@ -2,12 +2,13 @@ package com.dulno.workflow.sub.action.call;
 
 import com.dulno.core.database.*;
 import com.dulno.workflow.WorkflowModule;
-import com.dulno.workflow.action.Action;
-import com.dulno.workflow.action.ActionContentDatabaseTable;
-import com.dulno.workflow.action.ActionInformation;
+import com.dulno.workflow.action.*;
 import com.dulno.workflow.component.input.DynamicInputComponentVariable;
 import com.dulno.workflow.component.input.InputComponentSelect;
 import com.dulno.workflow.component.input.InputComponentVariable;
+import com.dulno.workflow.component.output.DynamicOutputComponentVariable;
+import com.dulno.workflow.component.output.OutputComponentVariable;
+import com.dulno.workflow.sub.action.close.SubWorkflowCloseAction;
 import com.dulno.workflow.sub.trigger.SubWorkflowTrigger;
 import com.dulno.workflow.trigger.TriggerDatabaseTable;
 import com.google.common.collect.Lists;
@@ -15,6 +16,7 @@ import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,21 +24,25 @@ import java.util.concurrent.CompletableFuture;
 @AllArgsConstructor(staticName = "create")
 public final class SubWorkflowCallAction implements Action<SubWorkflowCallActionExecutor> {
   public static SubWorkflowCallAction create(
-    TriggerDatabaseTable triggerDatabaseTable, SubWorkflowTrigger subWorkflowTrigger,
-    WorkflowModule workflowModule, InputComponentSelect subWorkflowSelect,
-    DatabaseConnection databaseConnection, DatabaseKeyspace databaseKeyspace
+    TriggerDatabaseTable triggerDatabaseTable, ActionDatabaseTable actionDatabaseTable,
+    SubWorkflowTrigger subWorkflowTrigger,
+    SubWorkflowCloseAction subWorkflowCloseAction, WorkflowModule workflowModule,
+    InputComponentSelect subWorkflowSelect, DatabaseConnection databaseConnection,
+    DatabaseKeyspace databaseKeyspace
   ) {
     var contentColumns = Lists.<DatabaseColumn>newArrayList();
     contentColumns.add(DatabaseColumn.create("workflow", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("inputs", DatabaseDataType.TEXT));
-    return new SubWorkflowCallAction(triggerDatabaseTable, subWorkflowTrigger,
-      workflowModule, subWorkflowSelect,
+    return new SubWorkflowCallAction(triggerDatabaseTable, actionDatabaseTable,
+      subWorkflowTrigger, subWorkflowCloseAction, workflowModule, subWorkflowSelect,
       ActionContentDatabaseTable.create(databaseConnection, databaseKeyspace,
         "action_sub_workflow_call", contentColumns));
   }
 
   private final TriggerDatabaseTable triggerDatabaseTable;
+  private final ActionDatabaseTable actionDatabaseTable;
   private final SubWorkflowTrigger subWorkflowTrigger;
+  private final SubWorkflowCloseAction subWorkflowCloseAction;
   private final WorkflowModule workflowModule;
   private final InputComponentSelect subWorkflowSelect;
   private final ActionContentDatabaseTable contentDatabaseTable;
@@ -57,7 +63,42 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
         Lists.newArrayList("workflow"),
         SubWorkflowCallActionInputFunction.create(triggerDatabaseTable,
           subWorkflowTrigger)))
+      .withOutputVariable(DynamicOutputComponentVariable.create(
+        (currentContent, previousActions) -> findSubWorkflowOutputs(currentContent)))
       .build();
+  }
+
+  private CompletableFuture<List<OutputComponentVariable>> findSubWorkflowOutputs(
+    JSONObject actionContent
+  ) {
+    try {
+      var workflow = UUID.fromString(actionContent.getString("workflow"));
+      return actionDatabaseTable.findActionsByWorkflowAndType(workflow,
+        "sub-workflow-close-action").thenCompose(this::findSubWorkflowAction);
+    } catch (Exception exception) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
+  }
+
+  private CompletableFuture<List<OutputComponentVariable>> findSubWorkflowAction(
+    List<ActionEntry> actions
+  ) {
+    if (actions.isEmpty()) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
+    return subWorkflowCloseAction.findContent(actions.get(0).id())
+      .thenApply(this::assemblySubWorkflowOutputVariables);
+  }
+
+  private List<OutputComponentVariable> assemblySubWorkflowOutputVariables(
+    Map<String, Object> actionContent
+  ) {
+    var variables = Lists.<OutputComponentVariable>newArrayList();
+    var outputs = new JSONObject((String) actionContent.get("outputs"));
+    for (var key : outputs.keySet()) {
+      variables.add(OutputComponentVariable.create(key, "sub_workflow_" + key));
+    }
+    return variables;
   }
 
   @Override

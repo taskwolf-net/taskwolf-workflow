@@ -78,12 +78,13 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   }
 
   private CompletableFuture<Void> updateTrigger(TriggerEntry entry) {
-    return update(entry.id(), DatabaseRow.of(entry.id(), entry.ownerId(),
-      entry.workflowId(), entry.module(), entry.type(), entry.state().toString()));
+    return update(DatabaseCondition.of("id", entry.id(), "owner", entry.ownerId()),
+      DatabaseRow.of(entry.id(), entry.ownerId(), entry.workflowId(),
+        entry.module(), entry.type(), entry.state().toString()));
   }
 
   public CompletableFuture<Void> deleteTrigger(UUID triggerId) {
-    return delete(triggerId);
+    return delete(DatabaseCondition.of("id", triggerId));
   }
 
   public CompletableFuture<UUID> generateAvailableTriggerId() {
@@ -96,15 +97,16 @@ public final class TriggerDatabaseTable extends DatabaseTable {
   }
 
   public CompletableFuture<Boolean> triggerExists(UUID triggerId) {
-    return exists(triggerId);
+    return exists(DatabaseCondition.of("id", triggerId));
   }
 
   public CompletableFuture<Boolean> triggerExistsByWorkflow(UUID workflowId) {
-    return workflowView.exists(workflowId);
+    return workflowView.exists(DatabaseCondition.of("workflow", workflowId));
   }
 
   public CompletableFuture<TriggerEntry> findTrigger(UUID triggerId) {
-    return selectRow(triggerId).thenApply(row -> TriggerEntry.of(row, this));
+    return selectRow(DatabaseCondition.of("id", triggerId))
+      .thenApply(row -> TriggerEntry.of(row, this));
   }
 
   public CompletableFuture<TriggerEntry> findTriggerByWorkflow(UUID workflowId) {

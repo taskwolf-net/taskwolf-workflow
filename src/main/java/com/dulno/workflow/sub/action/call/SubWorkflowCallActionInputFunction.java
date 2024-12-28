@@ -27,9 +27,13 @@ public final class SubWorkflowCallActionInputFunction
   public CompletableFuture<List<InputComponentVariable>> compile(
     User user, UUID target, JSONObject jsonObject
   ) {
-    var workflowId = UUID.fromString(jsonObject.getString("workflow"));
-    return triggerDatabaseTable.triggerExistsByWorkflow(workflowId)
-      .thenCompose(exists -> checkTriggerPermission(workflowId, target, exists));
+    try {
+      var workflowId = UUID.fromString(jsonObject.getString("workflow"));
+      return triggerDatabaseTable.triggerExistsByWorkflow(workflowId)
+        .thenCompose(exists -> checkTriggerPermission(workflowId, target, exists));
+    } catch (Exception exception) {
+      return CompletableFuture.completedFuture(Lists.newArrayList());
+    }
   }
 
   private CompletableFuture<List<InputComponentVariable>> checkTriggerPermission(

@@ -45,7 +45,8 @@ public final class SubWorkflowTrigger implements Trigger {
       .withInputVariable(InputComponentVariable.createRequired("sub.workflow.trigger.input.inputs.name",
         "inputs", "sub.workflow.trigger.input.inputs.description", InputComponentDataType.LIST))
       .withOutputVariable(DynamicOutputComponentVariable.create(
-        (currentContent, previousActions) -> findSubWorkflowInputs(currentContent)))
+        (currentContent, previousActions) -> CompletableFuture.completedFuture(
+          findSubWorkflowInputs(currentContent))))
       .build();
   }
 

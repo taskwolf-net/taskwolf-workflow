@@ -41,8 +41,8 @@ public final class ItemLoop extends Loop {
       .withInputVariable(InputComponentVariable.createOptional("loop.item.input.limit.name",
         "loopLimit", "loop.item.input.limit.description", InputComponentDataType.TEXT))
       .withOutputVariable(DynamicOutputComponentVariable.create(
-        (currentContent, previousActions) -> findListOutputs(currentContent,
-          previousActions, workflowModule)))
+        (currentContent, previousActions) -> CompletableFuture.completedFuture(
+          findListOutputs(currentContent, previousActions, workflowModule))))
       .withOutputVariable(OutputComponentVariable.create("loop.item.output.index", "loopIndex"))
       .withOutputVariable(OutputComponentVariable.create("loop.item.output.iterations", "loopIterations"))
       .withOutputVariable(OutputComponentVariable.create("loop.item.output.list", "loopList"))

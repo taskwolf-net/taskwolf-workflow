@@ -57,9 +57,9 @@ public final class SubWorkflowCallActionExecutor implements ActionExecutor {
       var value = inputs.has(input) ? inputs.get(input) : "";
       triggerInformation.put("sub_workflow_" + input, value);
     }
-    workflowModule.createWorkflowById(workflow)
-      .thenAccept(workflow -> workflow.trigger(triggerInformation));
-    return ActionResult.futureSuccess(buildInformation());
+    return workflowModule.createWorkflowById(workflow)
+      .thenCompose(workflow -> workflow.trigger(triggerInformation)
+        .thenApply(result -> ActionResult.success(buildInformation())));
   }
 
   private Map<String, Object> buildInformation() {

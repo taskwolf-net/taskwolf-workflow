@@ -64,6 +64,9 @@ public final class SubWorkflowCallActionInputFunction
         .map(entry -> (String) entry).toList();
       var variables = Lists.<InputComponentVariable>newArrayList();
       for (var input : inputs) {
+        if (input.isEmpty() || input.isBlank()) {
+          continue;
+        }
         variables.add(InputComponentVariable.createOptional(input,
           "sub_workflow_" + input, "", InputComponentDataType.TEXT));
       }

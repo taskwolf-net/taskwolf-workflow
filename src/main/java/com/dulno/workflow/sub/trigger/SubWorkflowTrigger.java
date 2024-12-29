@@ -57,6 +57,7 @@ public final class SubWorkflowTrigger implements Trigger {
       var inputs = new JSONArray(triggerContent.getString("inputs"));
       return inputs.toList().stream()
         .map(entry -> (String) entry)
+        .filter(entry -> !entry.isEmpty() && !entry.isBlank())
         .map(entry -> OutputComponentVariable.create(entry,
           "sub_workflow_" + entry))
         .toList();

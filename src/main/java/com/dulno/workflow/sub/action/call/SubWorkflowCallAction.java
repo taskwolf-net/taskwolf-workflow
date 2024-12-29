@@ -96,6 +96,9 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
     var variables = Lists.<OutputComponentVariable>newArrayList();
     var outputs = new JSONObject((String) actionContent.get("outputs"));
     for (var key : outputs.keySet()) {
+      if (key.isEmpty() || key.isBlank()) {
+        continue;
+      }
       variables.add(OutputComponentVariable.create(key, "sub_workflow_" + key));
     }
     return variables;

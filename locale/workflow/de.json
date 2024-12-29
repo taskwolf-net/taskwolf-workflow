@@ -78,5 +78,20 @@
   "loop.text.failure.wrong.format": "Beim Ausführen der Schleife ist ein Fehler aufgetreten. Der Fehler trat auf, weil der angegebene Grenzwerte nicht im richtigen Format angegeben wurden. Es sind nur ganzzahlige Werte zulässig.",
 
   "sub.workflow": "Unter-Workflow",
-  "sub.workflow.account.link.description": "Gute Nachrichten! Sie brauchen kein Konto zu verknüpfen, um dieses Modul zu nutzen. Klicken Sie einfach auf \"Überspringen\", um zur nächsten Seite zu gelangen."
+  "sub.workflow.account.link.description": "Gute Nachrichten! Sie brauchen kein Konto zu verknüpfen, um dieses Modul zu nutzen. Klicken Sie einfach auf \"Überspringen\", um zur nächsten Seite zu gelangen.",
+
+  "sub.workflow.trigger.name": "Unter-Workflow",
+  "sub.workflow.trigger.description": "Wird ausgelöst, wenn dieser Workflow von einem anderen Workflow aufgerufen wird",
+  "sub.workflow.trigger.input.inputs.name": "Eingaben",
+  "sub.workflow.trigger.input.inputs.description": "Die Liste der Eingaben, die Sie von dem anderen Workflow erhalten möchten",
+
+  "sub.workflow.action.call.name": "Unter-Workflow aufrufen",
+  "sub.workflow.action.call.description": "Wird verwendet, um einen Unter-Workflow aufzurufen",
+  "sub.workflow.action.call.input.workflow.name": "Workflow",
+  "sub.workflow.action.call.input.workflow.description": "Der aufzurufende Unter-Workflow",
+
+  "sub.workflow.action.close.name": "Unter-Workflow beenden",
+  "sub.workflow.action.close.description": "Wird verwendet, um den Unter-Workflow zu schließen",
+  "sub.workflow.action.close.input.outputs.name": "Ausgaben",
+  "sub.workflow.action.close.input.outputs.description": "Die Ausgaben, die der obere Workflow weiter verwenden kann"
 }

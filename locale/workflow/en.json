@@ -78,5 +78,20 @@
   "loop.text.failure.wrong.format": "An error occurred while executing the loop. The error occurred because the specified limit value is not specified in the correct format. Only integer numbers are allowed.",
 
   "sub.workflow": "Sub Workflow",
-  "sub.workflow.account.link.description": "Great news! You don't need to link an account to use this module. Just click on \"skip\" to go to the next page."
+  "sub.workflow.account.link.description": "Great news! You don't need to link an account to use this module. Just click on \"skip\" to go to the next page.",
+
+  "sub.workflow.trigger.name": "Sub workflow",
+  "sub.workflow.trigger.description": "Is triggered when this workflow is called up by another workflow",
+  "sub.workflow.trigger.input.inputs.name": "Inputs",
+  "sub.workflow.trigger.input.inputs.description": "The list of inputs you want to receive from the other workflow",
+
+  "sub.workflow.action.call.name": "Call sub workflow",
+  "sub.workflow.action.call.description": "Is used to call up a sub workflow",
+  "sub.workflow.action.call.input.workflow.name": "Workflow",
+  "sub.workflow.action.call.input.workflow.description": "The sub workflow you want to call",
+
+  "sub.workflow.action.close.name": "Return sub workflow",
+  "sub.workflow.action.close.description": "Is used to close the sub workflow",
+  "sub.workflow.action.close.input.outputs.name": "Outputs",
+  "sub.workflow.action.close.input.outputs.description": "The returns that the upper workflow can continue to use"
 }

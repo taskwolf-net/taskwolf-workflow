@@ -52,6 +52,7 @@ public final class Workflow {
   private final List<WorkflowStepCompound> steps;
   private final Bundle bundle;
   private int currentStepIndex = 0;
+  private Map<String, Object> currentInformation;
 
   /**
    * Triggers the workflow
@@ -103,10 +104,10 @@ public final class Workflow {
       postExecutionFailure("workflow.throttle.intervention");
       return CompletableFuture.completedFuture(false);
     }
-    var triggerInformation = Maps.newHashMap(information);
-    triggerInformation.putAll(timeInformation());
-    return checkOperationLimit(false).thenCompose(limitReached -> executeNextStep(
-      prepareInformation("trigger", triggerInformation), limitReached));
+    currentInformation = Maps.newHashMap(information);
+    currentInformation.putAll(timeInformation());
+    currentInformation = prepareInformation("trigger", currentInformation);
+    return checkOperationLimit(false).thenCompose(this::executeNextStep);
   }
 
   private Map<String, Object> timeInformation() {
@@ -148,9 +149,7 @@ public final class Workflow {
     }
   }
 
-  private CompletableFuture<Boolean> executeNextStep(
-    Map<String, Object> information, boolean limitReached
-  ) {
+  private CompletableFuture<Boolean> executeNextStep(boolean limitReached) {
     if (maintenanceSchedule.isMaintenanceRunning() || limitReached) {
       return CompletableFuture.completedFuture(false);
     }
@@ -159,15 +158,13 @@ public final class Workflow {
       return CompletableFuture.completedFuture(true);
     }
     var step = steps.get(currentStepIndex).step();
-    return step.execute(information)
+    return step.execute(currentInformation)
       .thenCompose(result -> checkOperationLimit(step)
-        .thenCompose(newLimitReached -> processStepResult(result, information,
-          newLimitReached)));
+        .thenCompose(newLimitReached -> processStepResult(result, newLimitReached)));
   }
 
   private CompletableFuture<Boolean> processStepResult(
-    WorkflowStepResult result, Map<String, Object> information,
-    boolean limitReached
+    WorkflowStepResult result, boolean limitReached
   ) {
     if (result.isFailure()) {
       postExecutionFailure(result.failureMessage(), result.failureStepIndex());
@@ -177,10 +174,10 @@ public final class Workflow {
       postExecutionSuccess();
       return CompletableFuture.completedFuture(true);
     }
-    information.putAll(prepareInformation("step" + currentStepIndex,
+    currentInformation.putAll(prepareInformation("step" + currentStepIndex,
       result.passOnInformation()));
     currentStepIndex++;
-    return executeNextStep(information, limitReached);
+    return executeNextStep(limitReached);
   }
 
   private Map<String, Object> prepareInformation(
@@ -268,5 +265,9 @@ public final class Workflow {
     }
     WorkflowFailureNotification.create(translation, notificationMail, target,
       failureMessage).send();
+  }
+
+  public Map<String, Object> currentInformation() {
+    return Map.copyOf(currentInformation);
   }
 }

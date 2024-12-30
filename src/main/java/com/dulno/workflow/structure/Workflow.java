@@ -21,6 +21,7 @@ import com.dulno.workflow.throttle.WorkflowThrottle;
 import com.dulno.workflow.throttle.WorkflowThrottleDatabaseTable;
 import com.dulno.workflow.timeline.TimelineDatabaseTable;
 import com.dulno.workflow.action.ActionExecutor;
+import com.dulno.workflow.trigger.Trigger;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -49,6 +50,7 @@ public final class Workflow {
   private final ErrorRepository errorRepository;
   private final Mail notificationMail;
   private final WorkflowEntry workflowEntry;
+  private final Trigger trigger;
   private final List<WorkflowStepCompound> steps;
   private final Bundle bundle;
   private int currentStepIndex = 0;
@@ -102,6 +104,18 @@ public final class Workflow {
   ) {
     if (!throttleAllowsExecution) {
       postExecutionFailure("workflow.throttle.intervention");
+      return CompletableFuture.completedFuture(false);
+    }
+    return trigger.checkExecution(workflowEntry.triggerId())
+      .thenCompose(executionPermitted ->
+        checkTriggerExecution(information, executionPermitted));
+  }
+
+  private CompletableFuture<Boolean> checkTriggerExecution(
+    Map<String, Object> information, boolean executionPermitted
+  ) {
+    if (!executionPermitted) {
+      postExecutionFailure("workflow.trigger.execution.refused");
       return CompletableFuture.completedFuture(false);
     }
     currentInformation = Maps.newHashMap(information);

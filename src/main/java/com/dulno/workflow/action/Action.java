@@ -28,10 +28,12 @@ public interface Action<T extends ActionExecutor> {
   /**
    * Is called when a new action is to be stored
    * @param actionId The id of the new action
+   * @param ownerId The id of the action owner
    * @param content The content of the new action
    * @return A future that is completed when insertion is completed
    */
-  CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content);
+  CompletableFuture<Void> insert(UUID actionId, UUID ownerId,
+    Map<String, Object> content);
 
   /**
    * Is used to find the content of a stored action

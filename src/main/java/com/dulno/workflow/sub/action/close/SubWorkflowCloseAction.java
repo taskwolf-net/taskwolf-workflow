@@ -48,7 +48,9 @@ public final class SubWorkflowCloseAction implements Action<SubWorkflowCloseActi
   }
 
   @Override
-  public CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content) {
+  public CompletableFuture<Void> insert(
+    UUID actionId, UUID ownerId, Map<String, Object> content
+  ) {
     return contentDatabaseTable.insertContent(actionId,
       DatabaseRow.of(content.get("outputs")));
   }

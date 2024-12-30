@@ -22,6 +22,7 @@ public final class SubWorkflowCallActionExecutor implements ActionExecutor {
   private final TriggerDatabaseTable triggerDatabaseTable;
   private final SubWorkflowTrigger subWorkflowTrigger;
   private final WorkflowModule workflowModule;
+  private final UUID owner;
   private final UUID workflow;
   private String inputs;
 
@@ -42,7 +43,9 @@ public final class SubWorkflowCallActionExecutor implements ActionExecutor {
   }
 
   private CompletableFuture<ActionResult> execute(TriggerEntry triggerEntry) {
-    if (!triggerEntry.type().equals("sub-workflow-trigger")) {
+    if (!triggerEntry.ownerId().equals(owner) ||
+      !triggerEntry.type().equals("sub-workflow-trigger")
+    ) {
       return ActionResult.futureFailure("sub.workflow.action.call.workflow.wrong.trigger");
     }
     return subWorkflowTrigger.findContent(triggerEntry.id())

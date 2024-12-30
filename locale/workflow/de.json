@@ -1,6 +1,7 @@
 {
   "workflow.operations.limit.reached": "Sie haben die maximale Anzahl von Workflow-Operationen pro Monat ausgeschöpft. Aus diesem Grund konnte der Workflow nicht ausgeführt werden. Sie können Ihr Paket jederzeit aktualisieren, um zusätzliche Workflow-Operationen zu erhalten.",
   "workflow.throttle.intervention": "Sie haben mehr als 50 Workflows pro Minute ausgeführt. Das System vermutete daher eine Rückkopplungsschleife innerhalb Ihrer Workflows. Um Ihr Betriebskontingent zu schützen, haben wir alle weiteren Workflow-Auslöser für die nächste Minute blockiert. Wenn Sie dies absichtlich tun und die Sperrung ungerechtfertigt ist, wenden Sie sich bitte an den Support.",
+  "workflow.trigger.execution.refused": "Beim Auslösen der Workflows ist ein Fehler aufgetreten. Sie haben wahrscheinlich die falsche Komponente im Trigger ausgewählt. Überprüfen Sie den Auslöser, um das Problem zu beheben.",
 
   "workflow.timeline.entry.created.title": "Workflow wurde erstellt",
   "workflow.timeline.entry.created.description": "Der Workflow wurde von %CREATOR% veröffentlicht.",

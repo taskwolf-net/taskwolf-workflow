@@ -13,6 +13,7 @@ import com.dulno.core.organization.OrganizationDatabaseTable;
 import com.dulno.core.organization.team.Team;
 import com.dulno.core.organization.team.TeamDatabaseTable;
 import com.dulno.core.user.UserDatabaseTable;
+import com.dulno.workflow.WorkflowModule;
 import com.dulno.workflow.integration.Integration;
 import com.dulno.workflow.operation.OperationDatabaseTable;
 import com.dulno.workflow.step.WorkflowStepCompound;
@@ -28,6 +29,8 @@ import com.dulno.workflow.loop.LoopDatabaseTable;
 import com.dulno.workflow.loop.LoopEntry;
 import com.dulno.workflow.loop.LoopFactory;
 import com.dulno.workflow.loop.LoopInformationRepository;
+import com.dulno.workflow.trigger.Trigger;
+import com.dulno.workflow.trigger.TriggerDatabaseTable;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -39,6 +42,8 @@ import java.util.concurrent.CompletableFuture;
 @Singleton
 public final class WorkflowFactory {
   private final WorkflowDatabaseTable workflowDatabaseTable;
+  private final WorkflowModule workflowModule;
+  private final TriggerDatabaseTable triggerDatabaseTable;
   private final ActionDatabaseTable actionDatabaseTable;
   private final ConditionDatabaseTable conditionDatabaseTable;
   private final ConditionFactory conditionFactory;
@@ -62,7 +67,8 @@ public final class WorkflowFactory {
 
   @Inject
   private WorkflowFactory(
-    WorkflowDatabaseTable workflowDatabaseTable,
+    WorkflowDatabaseTable workflowDatabaseTable, WorkflowModule workflowModule,
+    TriggerDatabaseTable triggerDatabaseTable,
     ActionDatabaseTable actionDatabaseTable,
     ConditionDatabaseTable conditionDatabaseTable,
     ConditionFactory conditionFactory,
@@ -82,6 +88,8 @@ public final class WorkflowFactory {
     @Named("notificationMail") Mail notificationMail
   ) {
     this.workflowDatabaseTable = workflowDatabaseTable;
+    this.workflowModule = workflowModule;
+    this.triggerDatabaseTable = triggerDatabaseTable;
     this.actionDatabaseTable = actionDatabaseTable;
     this.conditionDatabaseTable = conditionDatabaseTable;
     this.conditionFactory = conditionFactory;
@@ -107,8 +115,18 @@ public final class WorkflowFactory {
   public CompletableFuture<Workflow> create(WorkflowEntry workflowEntry) {
     return findWorkflowBundleOwner(workflowEntry)
       .thenCompose(bundleOwner -> bundleDatabaseTable.findBundle(bundleOwner)
-        .thenCompose(bundle -> assembleWorkflowSteps(workflowEntry, bundle)
-          .thenApply(steps -> assemblyWorkflow(workflowEntry, steps, bundle))));
+        .thenCompose(bundle -> findWorkflowTrigger(workflowEntry)
+          .thenCompose(trigger -> assembleWorkflowSteps(workflowEntry, bundle)
+            .thenApply(steps -> assemblyWorkflow(workflowEntry, trigger, steps,
+              bundle)))));
+  }
+
+  private CompletableFuture<Trigger> findWorkflowTrigger(
+    WorkflowEntry workflowEntry
+  ) {
+    return triggerDatabaseTable.findTrigger(workflowEntry.triggerId())
+      .thenApply(triggerEntry -> workflowModule.findTrigger(triggerEntry.module(),
+        triggerEntry.type()).get());
   }
 
   private CompletableFuture<List<WorkflowStepCompound>> assembleWorkflowSteps(
@@ -208,12 +226,14 @@ public final class WorkflowFactory {
   }
 
   private Workflow assemblyWorkflow(
-    WorkflowEntry workflowEntry, List<WorkflowStepCompound> steps, Bundle bundle
+    WorkflowEntry workflowEntry, Trigger trigger,
+    List<WorkflowStepCompound> steps, Bundle bundle
   ) {
     return Workflow.create(workflowDatabaseTable, timelineDatabaseTable,
       userDatabaseTable, operationDatabaseTable, workflowThrottleDatabaseTable,
       organizationDatabaseTable, notificationDatabaseTable, maintenanceSchedule,
-      translation, errorRepository, notificationMail, workflowEntry, steps, bundle);
+      translation, errorRepository, notificationMail, workflowEntry, trigger,
+      steps, bundle);
   }
 
   private CompletableFuture<UUID> findWorkflowBundleOwner(WorkflowEntry workflow) {

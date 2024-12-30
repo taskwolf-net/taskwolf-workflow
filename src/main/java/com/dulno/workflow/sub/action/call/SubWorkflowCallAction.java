@@ -31,6 +31,7 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
     DatabaseKeyspace databaseKeyspace
   ) {
     var contentColumns = Lists.<DatabaseColumn>newArrayList();
+    contentColumns.add(DatabaseColumn.create("owner", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("workflow", DatabaseDataType.UUID));
     contentColumns.add(DatabaseColumn.create("inputs", DatabaseDataType.TEXT));
     return new SubWorkflowCallAction(triggerDatabaseTable, actionDatabaseTable,
@@ -110,8 +111,11 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
   }
 
   @Override
-  public CompletableFuture<Void> insert(UUID actionId, Map<String, Object> content) {
-    return contentDatabaseTable.insertContent(actionId, encodeContent(content));
+  public CompletableFuture<Void> insert(
+    UUID actionId, UUID ownerId, Map<String, Object> content
+  ) {
+    return contentDatabaseTable.insertContent(actionId, DatabaseRow.of(ownerId)
+      .concat(encodeContent(content)));
   }
 
   private DatabaseRow encodeContent(Map<String, Object> content) {
@@ -133,8 +137,8 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
 
   private Map<String, Object> decodeContent(DatabaseRow row) {
     var content = Maps.<String, Object>newHashMap();
-    content.put("workflow", row.findCell(1).uuidValue().toString());
-    var inputs = new JSONObject(row.findCell(2).stringValue());
+    content.put("workflow", row.findCell(2).uuidValue().toString());
+    var inputs = new JSONObject(row.findCell(3).stringValue());
     for (var entry : inputs.keySet()) {
       content.put("sub_workflow_" + entry, inputs.getString(entry));
     }
@@ -146,7 +150,7 @@ public final class SubWorkflowCallAction implements Action<SubWorkflowCallAction
     return contentDatabaseTable.findContent(actionId).thenApply(content ->
       SubWorkflowCallActionExecutor.create(triggerDatabaseTable,
         subWorkflowTrigger, workflowModule, content.findCell(1).uuidValue(),
-        content.findCell(2).stringValue()));
+        content.findCell(2).uuidValue(), content.findCell(3).stringValue()));
   }
 
   @Override

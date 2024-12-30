@@ -31,10 +31,22 @@ public interface Trigger {
   /**
    * Is called when a new trigger is to be stored
    * @param triggerId The id of the new trigger
+   * @param ownerId The id of the trigger owner
    * @param content The content of the new trigger
    * @return A future that is completed when insertion is completed
    */
-  CompletableFuture<Void> insert(UUID triggerId, Map<String, Object> content);
+  CompletableFuture<Void> insert(UUID triggerId, UUID ownerId,
+    Map<String, Object> content);
+
+  /**
+   * Is called before a trigger is executed to check if the execution is permitted
+   * @param triggerId The id of the trigger
+   * @return A future that determines whether the execution is granted
+   * (default is true)
+   */
+  default CompletableFuture<Boolean> checkExecution(UUID triggerId) {
+    return CompletableFuture.completedFuture(true);
+  }
 
   /**
    * Is used to find the content of a stored trigger

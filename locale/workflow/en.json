@@ -1,6 +1,7 @@
 {
   "workflow.operations.limit.reached": "You have used up the maximum number of Workflow operations per month. For this reason, the workflow could not be executed. You can upgrade your package at any time to get additional workflow operations.",
   "workflow.throttle.intervention": "You have executed more than 50 workflows per minute. The system therefore suspected a feedback loop within your workflows. To protect your operations quota, we have blocked all further workflow triggers for the next minute. If your intention is intentional and the block is unjustified, please contact support.",
+  "workflow.trigger.execution.refused": "An error occurred when triggering the workflows. You have probably selected the wrong component in the trigger. Check the trigger to eliminate the problem.",
 
   "workflow.timeline.entry.created.title": "Workflow was created",
   "workflow.timeline.entry.created.description": "The workflow was published by %CREATOR%.",

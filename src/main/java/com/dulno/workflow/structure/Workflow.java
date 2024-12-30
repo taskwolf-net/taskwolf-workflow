@@ -103,7 +103,7 @@ public final class Workflow {
     Map<String, Object> information, boolean throttleAllowsExecution
   ) {
     if (!throttleAllowsExecution) {
-      postExecutionFailure("workflow.throttle.intervention");
+      postExecutionFailure("workflow.throttle.intervention", -1);
       return CompletableFuture.completedFuture(false);
     }
     return trigger.checkExecution(workflowEntry.triggerId())
@@ -115,7 +115,7 @@ public final class Workflow {
     Map<String, Object> information, boolean executionPermitted
   ) {
     if (!executionPermitted) {
-      postExecutionFailure("workflow.trigger.execution.refused");
+      postExecutionFailure("workflow.trigger.execution.refused", -1);
       return CompletableFuture.completedFuture(false);
     }
     currentInformation = Maps.newHashMap(information);
@@ -220,7 +220,7 @@ public final class Workflow {
     Operation operation, boolean addOperation
   ) {
     if (operation.operations() + 1 > bundle.workflowOperationLimit()) {
-      postExecutionFailure("workflow.operations.limit.reached");
+      postExecutionFailure("workflow.operations.limit.reached", -2);
       return CompletableFuture.completedFuture(true);
     }
     if (!addOperation) {
@@ -240,10 +240,6 @@ public final class Workflow {
         "timeline-workflow-execute", "{}"));
   }
 
-  private void postExecutionFailure(String failureMessage) {
-    postExecutionFailure(failureMessage, -1);
-  }
-
   private void postExecutionFailure(String failureMessage, int failureStepIndex) {
     long currentTime = System.currentTimeMillis();
     if (workflowEntry.state().isOperational()) {
@@ -252,7 +248,7 @@ public final class Workflow {
     var currentStep = steps.get(currentStepIndex);
     var timelineContent = Map.of("moduleName", currentStep.moduleName(),
       "stepName", currentStep.stepName(), "stepIndex",
-      failureStepIndex < 0 ? currentStepIndex : failureStepIndex,
+      failureStepIndex == -2 ? currentStepIndex : failureStepIndex,
       "message", failureMessage);
     timelineDatabaseTable.generateAvailableEntryId().thenAccept(id ->
       timelineDatabaseTable.insertEntry(id, workflowEntry.id(), currentTime,

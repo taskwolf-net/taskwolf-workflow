@@ -43,7 +43,7 @@ public class WorkflowStepResult {
    * @return The result
    */
   public static WorkflowStepResult failure(String failureMessage) {
-    return failure(failureMessage, -1);
+    return failure(failureMessage, -2);
   }
 
   /**

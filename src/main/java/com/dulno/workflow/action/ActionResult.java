@@ -59,6 +59,6 @@ public final class ActionResult extends WorkflowStepResult {
   }
 
   private ActionResult(WorkflowStepStatus status, String failureMessage) {
-    super(status, failureMessage, -1);
+    super(status, failureMessage, -2);
   }
 }

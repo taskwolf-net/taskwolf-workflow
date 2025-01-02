@@ -20,6 +20,7 @@ import com.dulno.workflow.step.WorkflowStepCompound;
 import com.dulno.workflow.step.WorkflowStepResult;
 import com.dulno.workflow.trigger.Trigger;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -189,9 +190,9 @@ public final class ItemLoop extends Loop {
     var iterations = limit.map(value -> Math.min(list.size(), value))
       .orElseGet(list::size);
     for (var i = 0; i < iterations; i++) {
-      var iterationInformation = prepareInformation("step" + loopEntry().index(),
-        createIterationInformation(list.get(i), i + 1, iterations, information));
-      var iterationResult = iterate(iterationInformation).join();
+      information.putAll(prepareInformation("step" + loopEntry().index(),
+        createIterationInformation(list.get(i), i + 1, iterations)));
+      var iterationResult = iterate(information).join();
       if (iterationResult.isFailure()) {
         return iterationResult;
       }
@@ -200,9 +201,9 @@ public final class ItemLoop extends Loop {
   }
 
   private Map<String, Object> createIterationInformation(
-    Map<String, Object> item, int index, int iterations,
-    Map<String, Object> information
+    Map<String, Object> item, int index, int iterations
   ) {
+    var information = Maps.<String, Object>newHashMap();
     information.putAll(item);
     information.put("loopIndex", index);
     information.put("loopIterations", iterations);

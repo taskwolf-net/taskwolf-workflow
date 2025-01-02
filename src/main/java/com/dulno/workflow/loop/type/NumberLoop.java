@@ -12,6 +12,7 @@ import com.dulno.workflow.operation.OperationDatabaseTable;
 import com.dulno.workflow.placeholder.PlaceholderDissolve;
 import com.dulno.workflow.step.WorkflowStepCompound;
 import com.dulno.workflow.step.WorkflowStepResult;
+import com.google.common.collect.Maps;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -111,9 +112,9 @@ public final class NumberLoop extends Loop {
     int start, int end, int limit, Map<String, Object> information
   ) {
     for (var i = start; i < Math.min(end, start + limit); i++) {
-      var iterationInformation = prepareInformation("step" + loopEntry().index(),
-        createIterationInformation(start, end, limit, i, information));
-      var iterationResult = iterate(iterationInformation).join();
+      information.putAll(prepareInformation("step" + loopEntry().index(),
+        createIterationInformation(start, end, limit, i)));
+      var iterationResult = iterate(information).join();
       if (iterationResult.isFailure()) {
         return iterationResult;
       }
@@ -122,8 +123,9 @@ public final class NumberLoop extends Loop {
   }
 
   private Map<String, Object> createIterationInformation(
-    int start, int end, int limit, int index, Map<String, Object> information
+    int start, int end, int limit, int index
   ) {
+    var information = Maps.<String, Object>newHashMap();
     information.put("loopIndex", index);
     information.put("loopStart", start);
     information.put("loopEnd", Math.min(end, start + limit));

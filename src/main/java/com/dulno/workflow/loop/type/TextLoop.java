@@ -12,6 +12,7 @@ import com.dulno.workflow.operation.OperationDatabaseTable;
 import com.dulno.workflow.placeholder.PlaceholderDissolve;
 import com.dulno.workflow.step.WorkflowStepCompound;
 import com.dulno.workflow.step.WorkflowStepResult;
+import com.google.common.collect.Maps;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -114,9 +115,9 @@ public final class TextLoop extends Loop {
     var iterations = limit.map(value -> Math.min(parts.length, value))
       .orElseGet(() -> parts.length);
     for (var i = 0; i < iterations; i++) {
-      var iterationInformation = prepareInformation("step" + loopEntry().index(),
-        createIterationInformation(parts[i], i + 1, iterations, information));
-      var iterationResult = iterate(iterationInformation).join();
+      information.putAll(prepareInformation("step" + loopEntry().index(),
+        createIterationInformation(parts[i], i + 1, iterations)));
+      var iterationResult = iterate(information).join();
       if (iterationResult.isFailure()) {
         return iterationResult;
       }
@@ -125,8 +126,9 @@ public final class TextLoop extends Loop {
   }
 
   private Map<String, Object> createIterationInformation(
-    String section, int index, int iterations, Map<String, Object> information
+    String section, int index, int iterations
   ) {
+    var information = Maps.<String, Object>newHashMap();
     information.put("loopSection", section);
     information.put("loopIndex", index);
     information.put("loopIterations", iterations);

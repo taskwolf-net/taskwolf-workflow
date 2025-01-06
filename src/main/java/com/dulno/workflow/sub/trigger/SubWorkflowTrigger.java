@@ -58,6 +58,7 @@ public final class SubWorkflowTrigger implements Trigger {
       return inputs.toList().stream()
         .map(entry -> (String) entry)
         .filter(entry -> !entry.isEmpty() && !entry.isBlank())
+        .map(entry -> entry.replace("\n", " "))
         .map(entry -> OutputComponentVariable.create(entry,
           "sub_workflow_" + entry))
         .toList();
@@ -76,7 +77,7 @@ public final class SubWorkflowTrigger implements Trigger {
     UUID triggerId, UUID ownerId, Map<String, Object> content
   ) {
     return contentDatabaseTable.insertContent(triggerId,
-      DatabaseRow.of(content.get("inputs")));
+      DatabaseRow.of(((String) content.get("inputs")).replace("\\n", " ")));
   }
 
   @Override

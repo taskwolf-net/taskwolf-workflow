@@ -52,7 +52,7 @@ public final class SubWorkflowCloseAction implements Action<SubWorkflowCloseActi
     UUID actionId, UUID ownerId, Map<String, Object> content
   ) {
     return contentDatabaseTable.insertContent(actionId,
-      DatabaseRow.of(content.get("outputs")));
+      DatabaseRow.of(((String) content.get("outputs")).replace("\\n", " ")));
   }
 
   @Override

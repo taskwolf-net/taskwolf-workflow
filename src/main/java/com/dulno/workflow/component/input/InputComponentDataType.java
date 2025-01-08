@@ -12,6 +12,7 @@ public enum InputComponentDataType {
   FILE,
   DATE,
   TIME,
+  COLOR,
   LIST,
   MAP,
   SELECT,

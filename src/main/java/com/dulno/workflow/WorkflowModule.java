@@ -12,9 +12,7 @@ import com.dulno.workflow.action.ActionInformation;
 import com.dulno.workflow.condition.ConditionInformationRepository;
 import com.dulno.workflow.condition.number.ConditionNumberGreaterThan;
 import com.dulno.workflow.condition.number.ConditionNumberSmallerThan;
-import com.dulno.workflow.condition.text.ConditionTextEndsWith;
-import com.dulno.workflow.condition.text.ConditionTextEquals;
-import com.dulno.workflow.condition.text.ConditionTextStartsWith;
+import com.dulno.workflow.condition.text.*;
 import com.dulno.workflow.integration.Integration;
 import com.dulno.workflow.loop.LoopInformationRepository;
 import com.dulno.workflow.loop.type.ItemLoop;
@@ -65,6 +63,8 @@ public final class WorkflowModule extends Module {
   private void registerConditions() {
     var repository = injector().getInstance(ConditionInformationRepository.class);
     repository.register(ConditionTextEquals.information());
+    repository.register(ConditionTextNotEquals.information());
+    repository.register(ConditionTextContains.information());
     repository.register(ConditionTextStartsWith.information());
     repository.register(ConditionTextEndsWith.information());
     repository.register(ConditionNumberGreaterThan.information());

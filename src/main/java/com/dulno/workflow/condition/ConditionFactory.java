@@ -2,9 +2,7 @@ package com.dulno.workflow.condition;
 
 import com.dulno.workflow.condition.number.ConditionNumberGreaterThan;
 import com.dulno.workflow.condition.number.ConditionNumberSmallerThan;
-import com.dulno.workflow.condition.text.ConditionTextEndsWith;
-import com.dulno.workflow.condition.text.ConditionTextEquals;
-import com.dulno.workflow.condition.text.ConditionTextStartsWith;
+import com.dulno.workflow.condition.text.*;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.AccessLevel;
@@ -18,21 +16,22 @@ public final class ConditionFactory {
     var json = new JSONObject(content);
     var inputValue = json.getString("inputValue");
     var comparativeValue = json.getString("comparativeValue");
-    if (type.equals("condition-text-equals")) {
-      return ConditionTextEquals.create(inputValue, comparativeValue);
-    }
-    if (type.equals("condition-text-starts-with")) {
-      return ConditionTextStartsWith.create(inputValue, comparativeValue);
-    }
-    if (type.equals("condition-text-ends-with")) {
-      return ConditionTextEndsWith.create(inputValue, comparativeValue);
-    }
-    if (type.equals("condition-number-is-greater")) {
-      return ConditionNumberGreaterThan.create(inputValue, comparativeValue);
-    }
-    if (type.equals("condition-number-is-smaller")) {
-      return ConditionNumberSmallerThan.create(inputValue, comparativeValue);
-    }
-    return null;
+    return switch (type) {
+      case "condition-text-equals" ->
+        ConditionTextEquals.create(inputValue, comparativeValue);
+      case "condition-text-not-equals" ->
+        ConditionTextNotEquals.create(inputValue, comparativeValue);
+      case "condition-text-contains" ->
+        ConditionTextContains.create(inputValue, comparativeValue);
+      case "condition-text-starts-with" ->
+        ConditionTextStartsWith.create(inputValue, comparativeValue);
+      case "condition-text-ends-with" ->
+        ConditionTextEndsWith.create(inputValue, comparativeValue);
+      case "condition-number-is-greater" ->
+        ConditionNumberGreaterThan.create(inputValue, comparativeValue);
+      case "condition-number-is-smaller" ->
+        ConditionNumberSmallerThan.create(inputValue, comparativeValue);
+      default -> null;
+    };
   }
 }

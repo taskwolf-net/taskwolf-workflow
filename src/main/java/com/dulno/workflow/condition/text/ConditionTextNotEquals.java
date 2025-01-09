@@ -8,21 +8,21 @@ import com.dulno.workflow.step.WorkflowStepResult;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public final class ConditionTextEquals extends Condition {
+public final class ConditionTextNotEquals extends Condition {
   public static ConditionInformation information() {
     return ConditionInformation.builder()
-      .withName("condition.text.equals")
+      .withName("condition.text.not.equals")
       .withDataType(ConditionDataType.TEXT)
-      .withIdentifier("condition-text-equals").build();
+      .withIdentifier("condition-text-not-equals").build();
   }
 
-  public static ConditionTextEquals create(
+  public static ConditionTextNotEquals create(
     String inputValue, String comparativeValue
   ) {
-    return new ConditionTextEquals(inputValue, comparativeValue);
+    return new ConditionTextNotEquals(inputValue, comparativeValue);
   }
 
-  private ConditionTextEquals(String inputValue, String comparativeValue) {
+  private ConditionTextNotEquals(String inputValue, String comparativeValue) {
     super(inputValue, comparativeValue);
   }
 
@@ -32,6 +32,6 @@ public final class ConditionTextEquals extends Condition {
   ) {
     dissolve(information);
     return CompletableFuture.completedFuture(WorkflowStepResult.success(
-      inputValue().equals(comparativeValue())));
+      !inputValue().equals(comparativeValue())));
   }
 }

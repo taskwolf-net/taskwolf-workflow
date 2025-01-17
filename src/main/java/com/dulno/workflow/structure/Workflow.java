@@ -91,7 +91,7 @@ public final class Workflow {
   private CompletableFuture<Boolean> triggerLimit(
     Map<String, Object> information
   ) {
-    if (System.currentTimeMillis() > bundle.expiration()) {
+    if (bundle.expiration() > 0 && System.currentTimeMillis() > bundle.expiration()) {
       return CompletableFuture.completedFuture(false);
     }
     return WorkflowThrottle.create(workflowThrottleDatabaseTable, bundle.ownerId())

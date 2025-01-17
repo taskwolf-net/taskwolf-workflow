@@ -30,6 +30,8 @@
 
   "condition": "Condition",
   "condition.text.equals": "Is equals",
+  "condition.text.not.equals": "Is not equals",
+  "condition.text.contains": "Contains",
   "condition.text.ends.with": "Ends with",
   "condition.text.starts.with": "Starts with",
   "condition.number.greater.than": "Is greater",

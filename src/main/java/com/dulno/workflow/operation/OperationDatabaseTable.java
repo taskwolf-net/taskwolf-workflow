@@ -3,6 +3,9 @@ package com.dulno.workflow.operation;
 import com.dulno.core.database.*;
 import com.google.common.collect.Lists;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -29,8 +32,8 @@ public final class OperationDatabaseTable extends DatabaseTable {
   }
 
   public CompletableFuture<Void> insertOperations(UUID targetId) {
-    return updateOperations(targetId, 0, System.currentTimeMillis() +
-      1000L * 60 * 60 * 24 * 30);
+    return updateOperations(targetId, 0,
+      calculateExpiration(System.currentTimeMillis()));
   }
 
   public CompletableFuture<Void> addOperations(
@@ -44,8 +47,8 @@ public final class OperationDatabaseTable extends DatabaseTable {
   }
 
   private CompletableFuture<Void> extendExpiration(Operation operation) {
-    return setOperations(operation, 0, operation.expiration() +
-      1000L * 60 * 60 * 24 * 30);
+    return setOperations(operation, 0,
+      calculateExpiration(operation.expiration()));
   }
 
   public CompletableFuture<Void> resetExpiration(UUID targetId) {
@@ -53,12 +56,23 @@ public final class OperationDatabaseTable extends DatabaseTable {
   }
 
   private CompletableFuture<Void> resetExpiration(Operation operation) {
-    return setOperations(operation, 0, System.currentTimeMillis() +
-      1000L * 60 * 60 * 24 * 30);
+    return setOperations(operation, 0,
+      calculateExpiration(System.currentTimeMillis()));
+  }
+
+  private long calculateExpiration(long start) {
+    var current = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start),
+      ZoneId.systemDefault());
+    var next = current.plusMonths(1);
+    if (next.getDayOfMonth() != current.getDayOfMonth()) {
+      next = next.withDayOfMonth(next.getMonth().length(
+        next.toLocalDate().isLeapYear()));
+    }
+    return next.toInstant().toEpochMilli();
   }
 
   private CompletableFuture<Void> setOperations(
-          Operation entry, long operations, long expiration
+    Operation entry, long operations, long expiration
   ) {
     return updateOperations(entry.targetId(), operations - entry.operations(),
       expiration - entry.expiration());

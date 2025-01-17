@@ -2,6 +2,9 @@ package com.dulno.workflow.timeline;
 
 import com.dulno.core.database.*;
 import com.dulno.core.database.condition.DatabaseCondition;
+import com.dulno.core.database.paging.DatabaseDirection;
+import com.dulno.core.database.paging.DatabaseOrder;
+import com.dulno.core.database.paging.DatabasePage;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -16,20 +19,33 @@ public final class TimelineDatabaseTable extends DatabaseTable {
     DatabaseConnection connection, DatabaseKeyspace keyspace
   ) {
     var columns = Lists.<DatabaseColumn>newArrayList();
+    columns.add(DatabaseColumn.create("workflow", DatabaseDataType.UUID,
+      DatabaseColumn.Type.PARTITION_KEY));
     columns.add(DatabaseColumn.create("id", DatabaseDataType.UUID,
-      DatabaseColumn.Type.PRIMARY_KEY));
-    columns.add(DatabaseColumn.create("workflow", DatabaseDataType.UUID));
+      DatabaseColumn.Type.CLUSTERING_KEY));
     columns.add(DatabaseColumn.create("time", DatabaseDataType.BIGINT));
     columns.add(DatabaseColumn.create("type", DatabaseDataType.TEXT));
     columns.add(DatabaseColumn.create("content", DatabaseDataType.TEXT));
-    return new TimelineDatabaseTable(connection, keyspace, TABLE_NAME, columns);
+    var table = new TimelineDatabaseTable(connection, keyspace, TABLE_NAME, columns);
+    table.createIfNotExists();
+    table.initializeViews();
+    return table;
   }
+
+  private DatabaseTable idView;
+  private DatabaseTable timeView;
 
   private TimelineDatabaseTable(
     DatabaseConnection connection, DatabaseKeyspace keyspace, String name,
     List<DatabaseColumn> columns
   ) {
     super(connection, keyspace, name, columns);
+  }
+
+  private void initializeViews() {
+    idView = createMaterializedViewIfNotExists("id_view", "id",
+      DatabaseColumn.Type.PARTITION_KEY);
+    timeView = createMaterializedViewIfNotExists("time_view", "time");
   }
 
   public CompletableFuture<Void> insertEntry(TimelineDatabaseEntry entry) {
@@ -40,11 +56,8 @@ public final class TimelineDatabaseTable extends DatabaseTable {
   public CompletableFuture<Void> insertEntry(
     UUID id, UUID workflowId, long time, String type, String content
   ) {
-    return insert(DatabaseRow.of(id, workflowId, time, type, content));
-  }
-
-  public CompletableFuture<Void> deleteEntry(UUID entryId) {
-    return delete(entryId);
+    return insert(DatabaseRow.of(id, workflowId, time, type, content),
+      "USING TTL " + (60 * 60 * 24 * 30));
   }
 
   public CompletableFuture<UUID> generateAvailableEntryId() {
@@ -56,20 +69,49 @@ public final class TimelineDatabaseTable extends DatabaseTable {
     return futureResponse;
   }
 
+  public CompletableFuture<Void> deleteEntry(UUID entryId) {
+    return findEntry(entryId).thenCompose(entry -> delete(
+      DatabaseCondition.of("id", entry.id(), "workflow", entry.workflowId())));
+  }
+
+  public CompletableFuture<Void> clearWorkflowEntries(UUID workflowId) {
+    return delete(DatabaseCondition.of("workflow", workflowId));
+  }
+
   public CompletableFuture<Boolean> entryExists(UUID entryId) {
-    return exists(entryId);
+    return idView.exists(DatabaseCondition.of("id", entryId));
   }
 
   public CompletableFuture<TimelineDatabaseEntry> findEntry(UUID entryId) {
-    return selectRow(entryId).thenApply(TimelineDatabaseEntry::of);
+    return idView.selectRow(DatabaseCondition.of("id", entryId))
+      .thenApply(row -> TimelineDatabaseEntry.of(row, idView));
   }
 
-  public CompletableFuture<List<TimelineDatabaseEntry>> findEntriesByWorkflow(
-    UUID workflowId
+  private static final int PAGE_SIZE = 20;
+
+  public CompletableFuture<DatabasePage<TimelineDatabaseEntry>> firstTimelinePage(
+    UUID ownerId
   ) {
-    return selectRows(DatabaseCondition.of("workflow", workflowId))
-      .thenApply(rows -> rows.stream().map(TimelineDatabaseEntry::of)
-        .collect(Collectors.toList()));
+    return timeView.selectPage(ownerId, DatabaseCondition.empty(),
+        DatabaseOrder.DESCENDING, PAGE_SIZE, 0)
+      .thenApply(this::createTimelinePage);
+  }
+
+  public CompletableFuture<DatabasePage<TimelineDatabaseEntry>> nextTimelinePage(
+    UUID ownerId, String pageState
+  ) {
+    return timeView.shiftPage(ownerId, DatabaseCondition.empty(),
+        DatabaseOrder.DESCENDING, PAGE_SIZE, pageState,
+        DatabaseDirection.FORWARD, DatabaseDirection.FORWARD)
+      .thenApply(this::createTimelinePage);
+  }
+
+  private DatabasePage<TimelineDatabaseEntry> createTimelinePage(
+    DatabasePage<DatabaseRow> page
+  ) {
+    return DatabasePage.create(page.content().stream()
+        .map(row -> TimelineDatabaseEntry.of(row, timeView)).toList(),
+      page.pageState(), page.pageNumber());
   }
 }
 

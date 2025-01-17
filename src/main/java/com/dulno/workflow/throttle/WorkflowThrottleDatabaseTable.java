@@ -44,7 +44,7 @@ public final class WorkflowThrottleDatabaseTable extends DatabaseTable {
   }
 
   public CompletableFuture<Void> setThrottle(
-          WorkflowThrottleEntry entry, long executions, long expiration
+    WorkflowThrottleEntry entry, long executions, long expiration
   ) {
     return updateThrottle(entry.targetId(), executions - entry.executions(),
       expiration - entry.expiration());

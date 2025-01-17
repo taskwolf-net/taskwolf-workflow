@@ -45,11 +45,7 @@ public class WorkflowInjectionModule extends AbstractModule {
   TimelineDatabaseTable provideTimelineDatabaseTable(
     DatabaseConnection connection, DatabaseKeyspace keyspace
   ) {
-    var timelineDatabaseTable = TimelineDatabaseTable.create(connection,
-      keyspace);
-    timelineDatabaseTable.createIfNotExists();
-    timelineDatabaseTable.createIndexIfNotExists("workflow");
-    return timelineDatabaseTable;
+    return TimelineDatabaseTable.create(connection, keyspace);
   }
 
   @Provides

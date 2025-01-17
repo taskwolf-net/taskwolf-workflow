@@ -7,21 +7,21 @@ import com.google.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
 public final class TimelineFactory {
-  private final TimelineDatabaseTable timelineDatabaseTable;
   private final TimelineEntryFactory timelineEntryFactory;
 
-  public CompletableFuture<Timeline> createTimeline(UUID workflowId) {
+  public CompletableFuture<Timeline> createTimeline(
+    List<TimelineDatabaseEntry> databaseEntries
+  ) {
     var futureResponse = new CompletableFuture<Timeline>();
-    timelineDatabaseTable.findEntriesByWorkflow(workflowId).thenApply(databaseEntries ->
-      AsyncIterator.execute(databaseEntries, entry ->
-          timelineEntryFactory.create(entry.time(), entry.type(), entry.content()))
-        .thenAccept(entries -> futureResponse.complete(Timeline.create(entries))));
+    AsyncIterator.execute(databaseEntries, entry ->
+        timelineEntryFactory.create(entry.time(), entry.type(), entry.content()))
+      .thenAccept(entries -> futureResponse.complete(Timeline.create(entries)));
     return futureResponse;
   }
 }

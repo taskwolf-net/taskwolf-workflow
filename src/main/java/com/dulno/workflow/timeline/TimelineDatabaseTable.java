@@ -10,7 +10,6 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public final class TimelineDatabaseTable extends DatabaseTable {
   private static final String TABLE_NAME = "workflow_timeline";
@@ -56,7 +55,7 @@ public final class TimelineDatabaseTable extends DatabaseTable {
   public CompletableFuture<Void> insertEntry(
     UUID id, UUID workflowId, long time, String type, String content
   ) {
-    return insert(DatabaseRow.of(id, workflowId, time, type, content),
+    return insert(DatabaseRow.of(workflowId, id, time, type, content),
       "USING TTL " + (60 * 60 * 24 * 30));
   }
 

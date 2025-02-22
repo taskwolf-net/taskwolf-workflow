@@ -1,6 +1,7 @@
 plugins {
   id("java")
   id("maven-publish")
+  id("io.freefair.lombok") version "8.12.1"
 }
 
 group = "com.dulno"
@@ -45,14 +46,14 @@ repositories {
 }
 
 dependencies {
-  testCompileOnly(platform("org.junit:junit-bom:5.11.3"))
-  testCompileOnly("org.junit.jupiter:junit-jupiter:5.11.3")
+  testCompileOnly(platform("org.junit:junit-bom:5.12.0"))
+  testCompileOnly("org.junit.jupiter:junit-jupiter:5.12.0")
 
   compileOnly("com.dulno:core:1.0.0-SNAPSHOT")
 
   compileOnly("com.google.inject:guice:7.0.0")
 
-  compileOnly("com.google.guava:guava:33.3.1-jre")
+  compileOnly("com.google.guava:guava:33.4.0-jre")
 
   compileOnly("org.projectlombok:lombok:1.18.36")
   annotationProcessor("org.projectlombok:lombok:1.18.36")
@@ -61,7 +62,7 @@ dependencies {
 
   compileOnly("com.datastax.oss:java-driver-core:4.17.0")
 
-  compileOnly("org.json:json:20240303")
+  compileOnly("org.json:json:20250107")
   compileOnly("commons-io:commons-io:2.18.0")
 }
 

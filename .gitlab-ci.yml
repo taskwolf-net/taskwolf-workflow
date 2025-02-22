@@ -5,16 +5,19 @@ stages:
 
 variables:
   DOCKER_IMAGE: "dulno-core-workflow"
+  DOCKER_DOCS_IMAGE: "dulno-core-workflow-docs"
 
 build:
   stage: build
-  image: gradle:8.12.0-jdk21
+  image: gradle:8.12.1-jdk21
   script:
     - gradle jar
     - gradle publish
+    - gradle javadoc
   artifacts:
     paths:
       - build/libs/
+      - build/docs/javadoc/
     expire_in: 1 day
 
 publish:
@@ -32,13 +35,23 @@ publish:
     - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
     - docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:latest .
     - docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:latest
+    - docker buildx build -t $DOCKER_REGISTRY/$DOCKER_DOCS_IMAGE:latest -f docs/Dockerfile .
+    - docker push $DOCKER_REGISTRY/$DOCKER_DOCS_IMAGE:latest
   only:
     - master
 
-deploy:
+deploy_core:
   stage: deploy
   trigger:
     project: $CORE_PIPELINE_PROJECT
     branch: $CORE_PIPELINE_BRANCH
+  only:
+    - master
+
+deploy_wiki:
+  stage: deploy
+  trigger:
+    project: $WIKI_PIPELINE_PROJECT
+    branch: $WIKI_PIPELINE_BRANCH
   only:
     - master

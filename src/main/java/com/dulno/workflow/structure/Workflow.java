@@ -172,9 +172,19 @@ public final class Workflow {
       return CompletableFuture.completedFuture(true);
     }
     var step = steps.get(currentStepIndex).step();
-    return step.execute(currentInformation)
-      .thenCompose(result -> checkOperationLimit(step)
-        .thenCompose(newLimitReached -> processStepResult(result, newLimitReached)));
+    try {
+      return step.execute(currentInformation)
+        .thenCompose(result -> checkOperationLimit(step)
+          .thenCompose(newLimitReached -> processStepResult(result, newLimitReached)))
+        .exceptionally(this::processStepException);
+    } catch (Exception exception) {
+      return CompletableFuture.completedFuture(processStepException(exception));
+    }
+  }
+
+  private boolean processStepException(Throwable throwable) {
+    postExecutionFailure(throwable.getMessage(), currentStepIndex);
+    return false;
   }
 
   private CompletableFuture<Boolean> processStepResult(

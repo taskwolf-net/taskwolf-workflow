@@ -71,10 +71,23 @@ public abstract class Loop implements WorkflowStep {
       return CompletableFuture.completedFuture(WorkflowStepResult.success());
     }
     var step = steps.get(currentIndex).step();
-    return step.execute(information)
-      .thenCompose(result -> checkOperationLimit(step)
-        .thenCompose(newLimitReached -> processStepResult(currentIndex, result,
-          steps, information, newLimitReached)));
+    try {
+      return step.execute(information)
+        .thenCompose(result -> checkOperationLimit(step)
+          .thenCompose(newLimitReached -> processStepResult(currentIndex, result,
+            steps, information, newLimitReached)))
+        .exceptionally(throwable -> processStepException(throwable, currentIndex));
+    } catch (Exception exception) {
+      return CompletableFuture.completedFuture(
+        processStepException(exception, currentIndex));
+    }
+  }
+
+  private WorkflowStepResult processStepException(
+    Throwable throwable, int currentIndex
+  ) {
+    var currentStepIndex = loopEntry.index() + 1 + currentIndex;
+    return WorkflowStepResult.failure(throwable.getMessage(), currentStepIndex);
   }
 
   private CompletableFuture<WorkflowStepResult> processStepResult(

@@ -16,7 +16,14 @@ public final class SubWorkflowCloseActionExecutor implements ActionExecutor {
 
   @Override
   public CompletableFuture<ActionResult> execute(Map<String, Object> information) {
-    var dissolve = PlaceholderDissolve.create(information);
+    var formattedInformation = Maps.<String, Object>newHashMap();
+    for (var entry : information.entrySet()) {
+      formattedInformation.put(entry.getKey(),
+        entry.getValue().toString().replace("\\", "\\\\")
+          .replace("\"", "\\\"").replace("\b", "\\b").replace("\f", "\\f")
+          .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
+    }
+    var dissolve = PlaceholderDissolve.create(formattedInformation);
     outputs = dissolve.dissolve(outputs);
     return ActionResult.futureSuccess(buildInformation(new JSONObject(outputs)));
   }

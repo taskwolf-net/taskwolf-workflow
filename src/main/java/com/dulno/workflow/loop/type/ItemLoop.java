@@ -1,6 +1,7 @@
 package com.dulno.workflow.loop.type;
 
 import com.dulno.core.bundle.Bundle;
+import com.dulno.core.error.ErrorRepository;
 import com.dulno.core.maintenance.MaintenanceSchedule;
 import com.dulno.workflow.WorkflowModule;
 import com.dulno.workflow.component.ComponentInformation;
@@ -115,24 +116,26 @@ public final class ItemLoop extends Loop {
 
   public static ItemLoop of(
     OperationDatabaseTable operationDatabaseTable,
-    MaintenanceSchedule maintenanceSchedule, LoopEntry loopEntry,
+    MaintenanceSchedule maintenanceSchedule, ErrorRepository errorRepository,
+    LoopEntry loopEntry,
     Callable<CompletableFuture<List<WorkflowStepCompound>>> stepGenerator,
     Bundle bundle, JSONObject content
   ) {
-    return create(operationDatabaseTable, maintenanceSchedule, loopEntry,
-      stepGenerator, bundle, content.getString("loopList"),
+    return create(operationDatabaseTable, maintenanceSchedule, errorRepository,
+      loopEntry, stepGenerator, bundle, content.getString("loopList"),
       content.has("loopLimit") ? Optional.of(content.getString("loopLimit")) :
         Optional.empty());
   }
 
   public static ItemLoop create(
     OperationDatabaseTable operationDatabaseTable,
-    MaintenanceSchedule maintenanceSchedule, LoopEntry loopEntry,
+    MaintenanceSchedule maintenanceSchedule, ErrorRepository errorRepository,
+    LoopEntry loopEntry,
     Callable<CompletableFuture<List<WorkflowStepCompound>>> stepGenerator,
     Bundle bundle, String list, Optional<String> limit
   ) {
-    return new ItemLoop(operationDatabaseTable, maintenanceSchedule, loopEntry,
-      stepGenerator, bundle, list, limit);
+    return new ItemLoop(operationDatabaseTable, maintenanceSchedule,
+      errorRepository, loopEntry, stepGenerator, bundle, list, limit);
   }
 
   private String list;
@@ -140,11 +143,12 @@ public final class ItemLoop extends Loop {
 
   private ItemLoop(
     OperationDatabaseTable operationDatabaseTable,
-    MaintenanceSchedule maintenanceSchedule, LoopEntry loopEntry,
+    MaintenanceSchedule maintenanceSchedule, ErrorRepository errorRepository,
+    LoopEntry loopEntry,
     Callable<CompletableFuture<List<WorkflowStepCompound>>> stepGenerator,
     Bundle bundle, String list, Optional<String> limit
   ) {
-    super(operationDatabaseTable, maintenanceSchedule, loopEntry,
+    super(operationDatabaseTable, maintenanceSchedule, errorRepository, loopEntry,
       stepGenerator, bundle);
     this.list = list;
     this.limit = limit;

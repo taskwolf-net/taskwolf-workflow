@@ -1,6 +1,7 @@
 package com.dulno.workflow.loop;
 
 import com.dulno.core.bundle.Bundle;
+import com.dulno.core.error.ErrorRepository;
 import com.dulno.core.maintenance.MaintenanceSchedule;
 import com.dulno.workflow.loop.type.ItemLoop;
 import com.dulno.workflow.loop.type.NumberLoop;
@@ -22,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 public final class LoopFactory {
   private final OperationDatabaseTable operationDatabaseTable;
   private final MaintenanceSchedule maintenanceSchedule;
+  private final ErrorRepository errorRepository;
 
   public Loop create(
     LoopEntry loopEntry,
@@ -32,13 +34,13 @@ public final class LoopFactory {
     var type = loopEntry.type();
     if (type.equals("loop-number")) {
       return NumberLoop.of(operationDatabaseTable, maintenanceSchedule,
-        loopEntry, stepGenerator, bundle, json);
+        errorRepository, loopEntry, stepGenerator, bundle, json);
     } else if (type.equals("loop-item")) {
       return ItemLoop.of(operationDatabaseTable, maintenanceSchedule,
-        loopEntry, stepGenerator, bundle, json);
+        errorRepository, loopEntry, stepGenerator, bundle, json);
     } else if (type.equals("loop-text")) {
       return TextLoop.of(operationDatabaseTable, maintenanceSchedule,
-        loopEntry, stepGenerator, bundle, json);
+        errorRepository, loopEntry, stepGenerator, bundle, json);
     }
     return null;
   }

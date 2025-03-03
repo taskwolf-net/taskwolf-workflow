@@ -184,6 +184,7 @@ public final class Workflow {
 
   private boolean processStepException(Throwable throwable) {
     postExecutionFailure(throwable.getMessage(), currentStepIndex);
+    errorRepository.processError(throwable);
     return false;
   }
 

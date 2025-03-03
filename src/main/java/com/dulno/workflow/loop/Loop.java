@@ -1,6 +1,7 @@
 package com.dulno.workflow.loop;
 
 import com.dulno.core.bundle.Bundle;
+import com.dulno.core.error.ErrorRepository;
 import com.dulno.core.maintenance.MaintenanceSchedule;
 import com.dulno.workflow.action.ActionExecutor;
 import com.dulno.workflow.operation.Operation;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class Loop implements WorkflowStep {
   private final OperationDatabaseTable operationDatabaseTable;
   private final MaintenanceSchedule maintenanceSchedule;
+  private final ErrorRepository errorRepository;
   private final LoopEntry loopEntry;
   private final Callable<CompletableFuture<List<WorkflowStepCompound>>> stepGenerator;
   private final Bundle bundle;
@@ -86,6 +88,7 @@ public abstract class Loop implements WorkflowStep {
   private WorkflowStepResult processStepException(
     Throwable throwable, int currentIndex
   ) {
+    errorRepository.processError(throwable);
     var currentStepIndex = loopEntry.index() + 1 + currentIndex;
     return WorkflowStepResult.failure(throwable.getMessage(), currentStepIndex);
   }

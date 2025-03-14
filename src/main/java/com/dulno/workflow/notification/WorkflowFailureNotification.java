@@ -17,7 +17,7 @@ public final class WorkflowFailureNotification implements Notification {
     var title = translation.translate(user, "workflow.failure.notification.title");
     var body = String.format(
       translation.translate(user, "workflow.failure.notification.body"),
-      translation.translate(user, failureMessageKey));
+      user.name(), translation.translate(user, failureMessageKey));
     notificationMail.send(user, title, body);
   }
 }

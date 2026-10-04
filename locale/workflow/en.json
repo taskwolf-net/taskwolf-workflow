@@ -24,7 +24,7 @@
   "workflow.timeline.entry.loop.remove.description": "A loop was removed from the workflow by %ACTOR%.",
 
   "workflow.failure.notification.title": "Workflow failed",
-  "workflow.failure.notification.body": "Hey %s,\n\nsomething went wrong during the execution of one of your Dulno workflows.\n\nThe reason for the error:\n\n%s\nPlease log in to your Dulno account to fix the error.\n\nIf you have any questions about your problem, you can contact support@dulno.com at any time or create a ticket.\n\nWe can then help you to rectify the error.",
+  "workflow.failure.notification.body": "Hey %s,\n\nsomething went wrong during the execution of one of your Taskwolf workflows.\n\nThe reason for the error:\n\n%s\nPlease log in to your Taskwolf account to fix the error.\n\nIf you have any questions about your problem, you can contact support@taskwolf.net at any time or create a ticket.\n\nWe can then help you to rectify the error.",
 
   "workflow.duplicated": "Duplicated",
 
